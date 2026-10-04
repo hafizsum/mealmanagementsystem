@@ -87,8 +87,7 @@ body{overflow-x:hidden}input,select,textarea,button{font-size:16px}
 </style></head><body><div class="w" id="app"></div><div class="cp">© Md. Hafizur Rahman</div>
 <script>
 // ===== CONFIG: paste your Firebase values here =====
-const CFG={key:"YOUR_API_KEY",db:"https://YOUR-PROJECT-default-rtdb.firebaseio.com"};
-const $=i=>document.getElementById(i),A=$("app");
+const CFG={key:"AIzaSyAZ-DqSWPH_m_glSl9PlkQ-9nmroteMoLI",db:"https://calm-oxide-442412-d1-default-rtdb.firebaseio.com"};const $=i=>document.getElementById(i),A=$("app");
 const toast=(m,c)=>{let e=$("ts");if(!e){e=document.createElement("div");e.id="ts";e.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));background:#c0392b;color:#fff;padding:12px;border-radius:10px;z-index:9;text-align:center";document.body.appendChild(e)}e.textContent=m;e.style.background=c||"#c0392b";e.style.display="block";clearTimeout(e.t);e.t=setTimeout(()=>e.style.display="none",4000)};
 window.alert=toast;
 const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mess Hisab – Mess Meals & Statement</title>
+<title>Meal Management System</title>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f5;--card:#fff;--tx:#17201b;--mut:#66706a;--ac:#0f7b4f;--bd:#dfe5e1;--rd:#c0392b}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121613;--card:#1b211d;--tx:#edf2ee;--mut:#9aa59e;--ac:#3fcf8e;--bd:#2b332e;--rd:#ff7a6b}}
@@ -192,12 +192,12 @@ const bzm={};S.bz.filter(x=>x.d.startsWith(mon)).forEach(x=>{const k=x.b||"";bzm
 const rows=S.mem.map(m=>{const dp0=S.dp.filter(x=>x.d.startsWith(mon)&&x.m==m).reduce((a,x)=>a+x.a,0),bz=bzm[m]||0,dep=bz,mc=ms[m]*rate,cost=mc+fx;return{m,meals:ms[m],dep,bz,mc,fx,cost,bal:dep-cost}});
 return{tm,tb,rate,rows,cm,rn,nt,fx,tcm:S.cm[mon]||0,trn:(S.rent&&S.rent[mon])||0,tnt:(S.net&&S.net[mon])||0,oth:bzm[""]||0}}
 async function boot(){
-if(CFG.key.startsWith("YOUR"))return A.innerHTML=`<h1>🍛 Mess Hisab</h1><div class="c"><b>Setup required</b><p class="m">Set your Firebase API key and database URL in CFG at the top of the file.</p></div>`;
+if(CFG.key.startsWith("YOUR"))return A.innerHTML=`<h1>🍛 Meal Management System</h1><div class="c"><b>Setup required</b><p class="m">Set your Firebase API key and database URL in CFG at the top of the file.</p></div>`;
 const h=location.hash;if(h.startsWith("#v="))return memberBoot(h.slice(3));
 if(!sess)return loginUI();
 try{await tok();const d=await db("GET","mess/"+sess.uid+"/data");S=d?norm(d):null;if(S)await loadPend();PD.forEach(p=>seen.add(p.k));draw();autoSnap()}
 catch(e){const c=lget("mh3");if(c){S=norm(c);draw();setSt("⚠️ Offline: "+e.message)}else{toast(e.message);loginUI()}}}
-function loginUI(){A.innerHTML=`<h1>🍛 Mess Hisab</h1><p class="m">Admin login. Only the admin can change meals, bazar and members.</p><div class="c"><input id="em" type="email" placeholder="Email"><input id="pw" type="password" placeholder="Password (at least 6 characters)"><button id="li">Login</button><button class="g" id="su">Create new mess (sign up)</button></div>`;
+function loginUI(){A.innerHTML=`<h1>🍛 Meal Management System</h1><p class="m">Admin login. Only the admin can change meals, bazar and members.</p><div class="c"><input id="em" type="email" placeholder="Email"><input id="pw" type="password" placeholder="Password (at least 6 characters)"><button id="li">Login</button><button class="g" id="su">Create new mess (sign up)</button></div>`;
 const go=c=>async()=>{try{await login($("em").value.trim(),$("pw").value,c);boot()}catch(e){toast(e.message)}};
 $("li").onclick=go(false);$("su").onclick=go(true)}
 function setup(){A.innerHTML=`<h1>🍛 New Mess</h1><div class="c"><input id="n" placeholder="Mess name"><textarea id="u" rows="5" placeholder="Member names (separate with commas or new lines)"></textarea><button id="go">Get started</button></div>`;

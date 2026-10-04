@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Meal Management System</title>
+<title>Mess Hisab – Mess Meals & Statement</title>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f5;--card:#fff;--tx:#17201b;--mut:#66706a;--ac:#0f7b4f;--bd:#dfe5e1;--rd:#c0392b}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121613;--card:#1b211d;--tx:#edf2ee;--mut:#9aa59e;--ac:#3fcf8e;--bd:#2b332e;--rd:#ff7a6b}}
@@ -83,7 +83,7 @@ body{overflow-x:hidden}input,select,textarea,button{font-size:16px}
 .rqs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
 .rqr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--bd)}
 .bd2{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
-.bd2.pending{background:#fff4d6;color:#8a5a00}.bd2.approved{background:rgba(15,123,79,.14);color:var(--ac)}.bd2.rejected{background:rgba(192,57,43,.14);color:var(--rd)}.bd2.closed{background:var(--bd);color:var(--mut)}
+.bd2.pending{background:#fff4d6;color:#8a5a00}.bd2.approved{background:rgba(15,123,79,.14);color:var(--ac)}.bd2.rejected{background:rgba(192,57,43,.14);color:var(--rd)}.bd2.closed,.bd2.offline{background:var(--bd);color:var(--mut)}
 button:disabled{opacity:.5;cursor:not-allowed}
 .cal{padding:14px}.ch{display:flex;justify-content:space-between;align-items:center}
 .cs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.cs div{background:rgba(15,123,79,.08);border-radius:12px;padding:8px 6px;text-align:center}.cs b{display:block;font-size:18px;color:var(--ac)}.cs span{font-size:11px;color:var(--mut)}
@@ -91,11 +91,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .ce{position:relative;aspect-ratio:1/1;border-radius:10px;background:var(--bg);border:1px solid var(--bd);display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;min-width:0}
 .ce.e{background:transparent;border:0}.ce small{position:absolute;top:3px;left:5px;font-size:10px;color:var(--mut)}
 .ce b{font-size:clamp(13px,4vw,18px);color:var(--ac)}.ce.on{background:rgba(15,123,79,.14);border-color:rgba(15,123,79,.35)}.ce.td{outline:2px solid var(--ac)}
+.rqa{display:flex;align-items:center;gap:6px}.rqa .x{margin:0;padding:3px 9px}
 </style></head><body><div class="w" id="app"></div><div class="cp">© Md. Hafizur Rahman</div>
 <script>
 // ===== CONFIG: paste your Firebase values here =====
-const CFG={key:"AIzaSyAZ-DqSWPH_m_glSl9PlkQ-9nmroteMoLI",db:"https://calm-oxide-442412-d1-default-rtdb.firebaseio.com"};
-const $=i=>document.getElementById(i),A=$("app");
+const CFG={key:"AIzaSyAZ-DqSWPH_m_glSl9PlkQ-9nmroteMoLI",db:"https://calm-oxide-442412-d1-default-rtdb.firebaseio.com"};const $=i=>document.getElementById(i),A=$("app");
 const toast=(m,c)=>{let e=$("ts");if(!e){e=document.createElement("div");e.id="ts";e.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));background:#c0392b;color:#fff;padding:12px;border-radius:10px;z-index:9;text-align:center";document.body.appendChild(e)}e.textContent=m;e.style.background=c||"#c0392b";e.style.display="block";clearTimeout(e.t);e.t=setTimeout(()=>e.style.display="none",4000)};
 window.alert=toast;
 const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
@@ -114,6 +114,8 @@ async function db(m,p,b,q){const r=await fetch(`${CFG.db}/${p}.json?auth=${await
 const setSt=t=>{const e=$("st");if(e)e.textContent=t};
 const save=()=>{lset("mh3",S);clearTimeout(tmr);setSt("Saving…");tmr=setTimeout(async()=>{try{await db("PUT","mess/"+sess.uid+"/data",S);setSt("☁️ Saved");autoSnap()}catch(e){setSt("⚠️ Not saved: "+e.message)}},700)};
 const loadPend=async()=>{const o=await db("GET","mess/"+sess.uid+"/pending")||{},old=Date.now()-45*864e5;PD=[];for(const k of Object.keys(o)){const v=o[k];if(v.s){if((v.at||0)<old)db("DELETE","mess/"+sess.uid+"/pending/"+k).catch(()=>{})}else PD.push(Object.assign({k},v))}};
+async function cleanReq(x){try{if(x.pk){await db("DELETE","mess/"+sess.uid+"/pending/"+x.pk);return}
+const o=await db("GET","mess/"+sess.uid+"/pending")||{};for(const k in o){const v=o[k];if(v.s=="approved"&&v.u==x.b&&String(v.d)==String(x.d)&&+v.a==+x.a&&(v.n||"")==(x.n||""))await db("DELETE","mess/"+sess.uid+"/pending/"+k)}}catch(e){}}
 const wa=n=>{n=String(n||"").replace(/\D/g,"");return n[0]=="0"?"88"+n:n};
 const bkText=()=>JSON.stringify(S);
 function dlBackup(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([bkText()],{type:"application/json"}));a.download="mess-backup-"+today()+".json";document.body.appendChild(a);a.click();a.remove();toast("Backup file downloaded","#0f7b4f")}
@@ -125,7 +127,7 @@ let seen=new Set();
 function badge(){const b=document.querySelector('[data-t="b"]');if(!b)return;let e=b.querySelector("em");if(PD.length){if(!e){e=document.createElement("em");b.appendChild(e)}e.textContent=PD.length}else if(e)e.remove()}
 async function poll(){if(MEM||!sess||!S)return;try{await loadPend();const nw=PD.filter(p=>!seen.has(p.k));PD.forEach(p=>seen.add(p.k));
 if(nw.length){const t="🛒 "+nw.map(p=>p.u+" ৳"+f(+p.a)).join(", ");toast(t,"#0f7b4f");try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}try{if(Notification.permission=="granted")new Notification("New bazar",{body:t})}catch(e){}}
-document.title=(PD.length?"("+PD.length+") ":"")+"Mess Hisab";badge();const ae=document.activeElement;if(nw.length&&tab=="b"&&!(ae&&ae.matches("input,textarea,select")))draw()}catch(e){}}
+document.title=(PD.length?"("+PD.length+") ":"")+"Meal Management System";badge();const ae=document.activeElement;if(nw.length&&tab=="b"&&!(ae&&ae.matches("input,textarea,select")))draw()}catch(e){}}
 function rr(x,a,b,w,h,r,fill){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();x.fillStyle=fill;x.fill()}
 function fit(x,t,w){while(t.length>1&&x.measureText(t).width>w)t=t.slice(0,-2)+"…";return t}
 const m2=n=>"৳"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -218,8 +220,8 @@ function bind(){A.querySelectorAll("[data-t]").forEach(b=>b.onclick=async()=>{ta
 $("lo").onclick=()=>{sess=null;idt=null;lset("mhs",null);lset("mh3",null);S=null;loginUI()};
 const dt=$("dt");if(dt)dt.onchange=()=>{if(dt.value){date=dt.value;mon=date.slice(0,7);draw()}};
 A.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{const m=S.mem[+b.dataset.i],d=S.meals[date]=S.meals[date]||{};d[m]=Math.max(0,(d[m]||0)+ +b.dataset.d);save();const y=scrollY;draw();scrollTo(0,y)});
-A.querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{const k=b.dataset.x,id=+k.slice(1);if(b.dataset.s!="1"){b.dataset.s="1";b.textContent="Sure?";return}if(k[0]=="b")S.bz=S.bz.filter(x=>x.id!=id);else S.dp=S.dp.filter(x=>x.id!=id);save();draw()});
-A.querySelectorAll("[data-ok]").forEach(b=>b.onclick=async()=>{const p=PD.find(x=>x.k==b.dataset.ok);try{await db("PATCH","mess/"+sess.uid+"/pending/"+p.k,{s:"approved",at:Date.now()})}catch(e){return toast("Could not approve: "+e.message)}S.bz.push({id:uid(),d:String(p.d),a:+p.a,n:p.n||"",b:p.u});save();PD=PD.filter(x=>x!=p);draw()});
+A.querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{const k=b.dataset.x,id=+k.slice(1);if(b.dataset.s!="1"){b.dataset.s="1";b.textContent="Sure?";return}if(k[0]=="b"){const gone=S.bz.find(x=>x.id==id);S.bz=S.bz.filter(x=>x.id!=id);if(gone)cleanReq(gone)}else S.dp=S.dp.filter(x=>x.id!=id);save();draw()});
+A.querySelectorAll("[data-ok]").forEach(b=>b.onclick=async()=>{const p=PD.find(x=>x.k==b.dataset.ok);try{await db("PATCH","mess/"+sess.uid+"/pending/"+p.k,{s:"approved",at:Date.now()})}catch(e){return toast("Could not approve: "+e.message)}S.bz.push({id:uid(),d:String(p.d),a:+p.a,n:p.n||"",b:p.u,pk:p.k});save();PD=PD.filter(x=>x!=p);draw()});
 A.querySelectorAll("[data-no]").forEach(b=>b.onclick=async()=>{const k=b.dataset.no,w=(A.querySelector('[data-rs="'+k+'"]')||{value:""}).value.trim();try{await db("PATCH","mess/"+sess.uid+"/pending/"+k,{s:"rejected",at:Date.now(),why:w})}catch(e){return toast("Could not reject: "+e.message)}PD=PD.filter(x=>x.k!=k);draw()});
 A.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{const m=b.dataset.l;lk={t:`${S.name}: ${m}, View your meals and statement here:\n${location.href.split("#")[0]}#v=${sess.uid}~${encodeURIComponent(m)}`};draw();scrollTo(0,0)});
 if($("cp"))$("cp").onclick=()=>cpy("sc","cp");
@@ -245,13 +247,17 @@ async function memberBoot(v){MEM=true;const i=v.indexOf("~"),id=v.slice(0,i),u=d
 try{const j=await anon();sess={rt:j.refreshToken,uid:j.localId};await load(id,u)}catch(e){A.innerHTML=`<p class="n">Failed to load: ${esc(e.message)}</p>`}}
 async function reqs(id,u,notify){const el=$("rq");if(!el)return;const kk="mhs:"+id+":"+u,sk="mhn:"+id+":"+u,L=(lget(kk)||[]).slice(0,15);if(!L.length){el.innerHTML="";return}
 const sn=lget(sk)||{},out=[];
-for(const q of L){let v=null;try{v=await db("GET","mess/"+id+"/pending/"+q.k)}catch(e){}out.push(Object.assign({},q,{v}))}
+for(const q of L){let v=null,bad=false;try{v=await db("GET","mess/"+id+"/pending/"+q.k)}catch(e){bad=true}out.push(Object.assign({},q,{v,bad}))}
+const gone=out.filter(q=>!q.bad&&!q.v);if(gone.length)lset(kk,(lget(kk)||[]).filter(q=>!gone.some(g=>g.k==q.k)));
+const show=out.filter(q=>q.bad||q.v);if(!show.length){el.innerHTML="";return}
 const fresh=out.filter(q=>q.v&&q.v.s&&sn[q.k]!==q.v.s);
 if(notify&&fresh.length){const t=fresh.map(q=>(q.v.s=="approved"?"✅ Approved ":"❌ Rejected ")+m2(q.a)+(q.n?" · "+q.n:"")+(q.v.s=="rejected"&&q.v.why?" — "+q.v.why:"")).join("  |  ");
 toast(t,fresh.every(q=>q.v.s=="approved")?"#0f7b4f":"#c0392b");try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}try{if(Notification.permission=="granted")new Notification("Bazar update",{body:t})}catch(e){}
 fresh.forEach(q=>sn[q.k]=q.v.s);lset(sk,sn)}
 const c=s=>out.filter(q=>q.v&&q.v.s==s).length,pend=out.filter(q=>q.v&&!q.v.s).length;
-el.innerHTML=`<div class="c"><b>📨 My bazar requests</b><div class="rqs"><span class="bd2 approved">${c("approved")} approved</span><span class="bd2 rejected">${c("rejected")} rejected</span><span class="bd2 pending">${pend} pending</span></div>`+out.map(q=>{const st=!q.v?"closed":q.v.s||"pending",lb={pending:"Pending",approved:"Approved",rejected:"Rejected",closed:"Closed"}[st];return `<div class="rqr"><div><b>${m2(q.a)}</b> <span class="m">${esc(q.n||"")}</span><div class="m">${esc(String(q.d).slice(5))}${st=="rejected"&&q.v.why?" · Reason: "+esc(q.v.why):""}</div></div><span class="bd2 ${st}">${lb}${fresh.includes(q)?" · NEW":""}</span></div>`}).join("")+`</div>`}
+el.innerHTML=`<div class="c"><div class="ch"><b>📨 My bazar requests</b>${show.some(q=>q.v&&q.v.s)?'<button class="x d" id="cld">Clear done</button>':""}</div><div class="rqs"><span class="bd2 approved">${c("approved")} approved</span><span class="bd2 rejected">${c("rejected")} rejected</span><span class="bd2 pending">${pend} pending</span></div>`+show.map(q=>{const st=q.bad?"offline":!q.v?"closed":q.v.s||"pending",lb={pending:"Pending",approved:"Approved",rejected:"Rejected",closed:"Closed",offline:"Offline"}[st];return `<div class="rqr"><div><b>${m2(q.a)}</b> <span class="m">${esc(q.n||"")}</span><div class="m">${esc(String(q.d).slice(5))}${st=="rejected"&&q.v.why?" · Reason: "+esc(q.v.why):""}</div></div><span class="rqa"><span class="bd2 ${st}">${lb}${fresh.includes(q)?" · NEW":""}</span>${q.v&&q.v.s?`<button class="x d" data-dm="${q.k}">✕</button>`:""}</span></div>`}).join("")+`</div>`;
+el.querySelectorAll("[data-dm]").forEach(b=>b.onclick=()=>{lset(kk,(lget(kk)||[]).filter(q=>q.k!=b.dataset.dm));reqs(id,u,false)});
+const cl=$("cld");if(cl)cl.onclick=()=>{const dn=show.filter(q=>q.v&&q.v.s).map(q=>q.k);lset(kk,(lget(kk)||[]).filter(q=>!dn.includes(q.k)));reqs(id,u,false)}}
 async function load(id,u){const d=await db("GET","mess/"+id+"/data");if(!d)return A.innerHTML="<p class='n'>Mess not found</p>";S=norm(d);member(id,u)}
 function member(id,u){window.mid=id;window.mu=u;if(!window.mp)window.mp=setInterval(()=>reqs(window.mid,window.mu,true),30000);const R=calc(),r=R.rows.find(x=>x.m==u);if(!r)return A.innerHTML=`<div class="c"><b class="n">${esc(u)} is not a member of this mess</b></div>`;
 const ml=Object.keys(S.meals).filter(d=>d.startsWith(mon)&&S.meals[d][u]>0).sort(),bz=S.bz.filter(x=>x.d.startsWith(mon)).sort((a,b)=>b.d.localeCompare(a.d)),neg=r.bal<0;

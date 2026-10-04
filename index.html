@@ -84,10 +84,18 @@ body{overflow-x:hidden}input,select,textarea,button{font-size:16px}
 .rqr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--bd)}
 .bd2{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
 .bd2.pending{background:#fff4d6;color:#8a5a00}.bd2.approved{background:rgba(15,123,79,.14);color:var(--ac)}.bd2.rejected{background:rgba(192,57,43,.14);color:var(--rd)}.bd2.closed{background:var(--bd);color:var(--mut)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.cal{padding:14px}.ch{display:flex;justify-content:space-between;align-items:center}
+.cs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.cs div{background:rgba(15,123,79,.08);border-radius:12px;padding:8px 6px;text-align:center}.cs b{display:block;font-size:18px;color:var(--ac)}.cs span{font-size:11px;color:var(--mut)}
+.cw,.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.cw span{text-align:center;font-size:11px;color:var(--mut);padding:2px 0}
+.ce{position:relative;aspect-ratio:1/1;border-radius:10px;background:var(--bg);border:1px solid var(--bd);display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;min-width:0}
+.ce.e{background:transparent;border:0}.ce small{position:absolute;top:3px;left:5px;font-size:10px;color:var(--mut)}
+.ce b{font-size:clamp(13px,4vw,18px);color:var(--ac)}.ce.on{background:rgba(15,123,79,.14);border-color:rgba(15,123,79,.35)}.ce.td{outline:2px solid var(--ac)}
 </style></head><body><div class="w" id="app"></div><div class="cp">© Md. Hafizur Rahman</div>
 <script>
 // ===== CONFIG: paste your Firebase values here =====
-const CFG={key:"AIzaSyAZ-DqSWPH_m_glSl9PlkQ-9nmroteMoLI",db:"https://calm-oxide-442412-d1-default-rtdb.firebaseio.com"};const $=i=>document.getElementById(i),A=$("app");
+const CFG={key:"AIzaSyAZ-DqSWPH_m_glSl9PlkQ-9nmroteMoLI",db:"https://calm-oxide-442412-d1-default-rtdb.firebaseio.com"};
+const $=i=>document.getElementById(i),A=$("app");
 const toast=(m,c)=>{let e=$("ts");if(!e){e=document.createElement("div");e.id="ts";e.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));background:#c0392b;color:#fff;padding:12px;border-radius:10px;z-index:9;text-align:center";document.body.appendChild(e)}e.textContent=m;e.style.background=c||"#c0392b";e.style.display="block";clearTimeout(e.t);e.t=setTimeout(()=>e.style.display="none",4000)};
 window.alert=toast;
 const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
@@ -108,7 +116,7 @@ const save=()=>{lset("mh3",S);clearTimeout(tmr);setSt("Saving…");tmr=setTimeou
 const loadPend=async()=>{const o=await db("GET","mess/"+sess.uid+"/pending")||{},old=Date.now()-45*864e5;PD=[];for(const k of Object.keys(o)){const v=o[k];if(v.s){if((v.at||0)<old)db("DELETE","mess/"+sess.uid+"/pending/"+k).catch(()=>{})}else PD.push(Object.assign({k},v))}};
 const wa=n=>{n=String(n||"").replace(/\D/g,"");return n[0]=="0"?"88"+n:n};
 const bkText=()=>JSON.stringify(S);
-function dlBackup(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([bkText()],{type:"application/json"}));a.download="mess-backup-"+today()+".json";document.body.appendChild(a);a.click();a.remove();S.lastDl=today();save();toast("Backup file downloaded","#0f7b4f");if($("bkn"))$("bkn").remove();if($("bkl"))$("bkl").textContent="Last downloaded: "+today()}
+function dlBackup(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([bkText()],{type:"application/json"}));a.download="mess-backup-"+today()+".json";document.body.appendChild(a);a.click();a.remove();toast("Backup file downloaded","#0f7b4f")}
 async function autoSnap(){try{const t=today();if(!S||!S.mem.length||S.snap===t)return;await db("PUT","mess/"+sess.uid+"/backups/"+t,S);S.snap=t;save();const ks=Object.keys(await db("GET","mess/"+sess.uid+"/backups",undefined,"&shallow=true")||{}).sort();for(const k of ks.slice(0,Math.max(0,ks.length-95)))await db("DELETE","mess/"+sess.uid+"/backups/"+k)}catch(e){}}
 async function snapList(){const el=$("bl");if(!el)return;try{const ks=Object.keys(await db("GET","mess/"+sess.uid+"/backups",undefined,"&shallow=true")||{}).sort().reverse();
 el.innerHTML=ks.length?'<p class="m">Cloud auto-backups:</p>'+ks.map(k=>`<div class="r"><span>${k}</span><button class="x" data-snap="${k}">Restore</button></div>`).join(""):'<p class="m">No cloud backups yet</p>';
@@ -204,7 +212,7 @@ h+=`<div class="c"><div class="r"><b>Bazar sent by members</b><button class="x" 
 if(tab=="s"){const r=calc();if(lk)h+=shareCard(lk.t);h+='<button id="cd2">📸 Send month-end statement card on WhatsApp</button>';
 h+=`<div class="c"><label class="fl">House rent (split equally)</label><input id="fr" type="number" inputmode="decimal" placeholder="House rent ৳" value="${(S.rent&&S.rent[mon])||""}"><label class="fl">Internet bill (split equally)</label><input id="fi" type="number" inputmode="decimal" placeholder="Internet bill ৳" value="${(S.net&&S.net[mon])||""}"><label class="fl">Common cost: maid, gas, etc. (split equally)</label><input id="cm" type="number" inputmode="decimal" placeholder="Common cost ৳" value="${S.cm[mon]||""}"><label class="fl">Your WhatsApp number (members can notify you here)</label><input id="ph" placeholder="Your WhatsApp number (members can notify you)" value="${esc(S.ph||"")}"></div>
 <div class="c"><b>Shared expenses (split equally)</b><div class="r"><span>House rent</span><b>৳${f(r.trn)}<span class="m"> · ৳${f(r.rn)} each</span></b></div><div class="r"><span>Internet bill</span><b>৳${f(r.tnt)}<span class="m"> · ৳${f(r.nt)} each</span></b></div><div class="r"><span>Common cost</span><b>৳${f(r.tcm)}<span class="m"> · ৳${f(r.cm)} each</span></b></div></div>
-<div class="c">${r.rows.map(x=>`<div class="r"><span><b>${esc(x.m)}</b><br><span class="m">${f(x.meals)} meals · Bazar ৳${f(x.bz)} · Cost ৳${f(x.cost)}</span><br><span class="${x.bal<0?"n":"p"}">${x.bal<0?"To pay":"To receive"} ৳${f(Math.abs(x.bal))}</span></span><button class="x" data-l="${esc(x.m)}">Link</button></div>`).join("")}</div><p class="m">A member's link always shows live figures. Send it once.</p><div class="c"><b>Backup</b><p class="m">A cloud backup is saved automatically each day you open the app (last 95 days). It includes all members, meals, bazar and bills.</p>${S.lastDl===today()?"":`<div class="bn" id="bkn"><span>📥 Backup not downloaded today</span></div>`}<button id="bd2">⬇ Download backup file</button><p class="m" id="bkl">Last downloaded: ${S.lastDl||"never"}</p><label class="fl">Restore from file<input type="file" id="bf" accept=".json,application/json"></label><div id="bl"></div></div><div class="c"><input id="rq" placeholder="Type RESET to delete"><button class="g" id="rs">Delete all data and start over</button></div>`}
+<div class="c">${r.rows.map(x=>`<div class="r"><span><b>${esc(x.m)}</b><br><span class="m">${f(x.meals)} meals · Bazar ৳${f(x.bz)} · Cost ৳${f(x.cost)}</span><br><span class="${x.bal<0?"n":"p"}">${x.bal<0?"To pay":"To receive"} ৳${f(Math.abs(x.bal))}</span></span><button class="x" data-l="${esc(x.m)}">Link</button></div>`).join("")}</div><p class="m">A member's link always shows live figures. Send it once.</p><div class="c"><b>Backup &amp; Restore</b><p class="m">Download a backup file with all members, meals, bazar and bills. To restore, choose that file and tap Restore.</p><button id="bd2">⬇ Download backup file</button><label class="fl">Restore from a backup file</label><input type="file" id="bf" accept=".json,application/json"><button class="g" id="br" disabled>Restore data</button><div id="bl"></div></div><div class="c"><input id="rq" placeholder="Type RESET to delete"><button class="g" id="rs">Delete all data and start over</button></div>`}
 A.innerHTML=h+nav;bind()}
 function bind(){A.querySelectorAll("[data-t]").forEach(b=>b.onclick=async()=>{tab=b.dataset.t;lk=null;if(tab=="b")try{await loadPend()}catch(e){}draw()});
 $("lo").onclick=()=>{sess=null;idt=null;lset("mhs",null);lset("mh3",null);S=null;loginUI()};
@@ -224,7 +232,10 @@ if($("mo"))$("mo").onchange=e=>{if(e.target.value){mon=e.target.value;draw()}};
 if($("cm"))$("cm").onchange=e=>{S.cm[mon]=+e.target.value||0;save();draw()};
 if($("fr"))$("fr").onchange=e=>{S.rent=S.rent||{};S.rent[mon]=+e.target.value||0;save();draw()};
 if($("fi"))$("fi").onchange=e=>{S.net=S.net||{};S.net[mon]=+e.target.value||0;save();draw()};
-if($("bd2")){$("bd2").onclick=dlBackup;snapList();$("bf").onchange=e=>{const fl=e.target.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.mem)throw 0;S=norm(o);save();draw();toast("Restored","#0f7b4f")}catch(x){toast("Could not read the file")}};rd.readAsText(fl)}}
+if($("bd2")){$("bd2").onclick=dlBackup;snapList();const bf=$("bf"),br=$("br");bf.onchange=()=>{br.disabled=!bf.files[0]};
+br.onclick=()=>{const fl=bf.files[0];if(!fl)return toast("Choose a backup file first");const rd=new FileReader();rd.onload=async()=>{let o;try{o=JSON.parse(rd.result);if(!Array.isArray(o.mem))throw 0}catch(x){return toast("This is not a valid backup file")}
+try{await db("PUT","mess/"+sess.uid+"/backups/"+today()+"-before-restore",S)}catch(e){}
+S=norm(o);save();draw();toast("Data restored","#0f7b4f")};rd.readAsText(fl)}}
 if($("cd"))$("cd").onclick=sendCard;if($("cd2"))$("cd2").onclick=sendCard;
 if($("cr"))$("cr").onchange=e=>{S.cr=e.target.checked;save();draw()};
 if($("ph"))$("ph").onchange=e=>{S.ph=e.target.value.trim();save()};
@@ -254,7 +265,9 @@ ${[["🍽️","Meal cost",f(r.meals)+" meals × "+m2(R.rate),r.mc,"#0f7b4f"],["�
 <div class="it"><span>Total cost</span><b>${m2(r.cost)}</b></div>
 <div class="il cr"><i style="background:#0f7b4f">🛒</i><div><b>Bazar you paid</b><small>Credited to you</small></div><em>− ${m2(r.bz)}</em></div>
 <div class="ib ${neg?"neg":"pos"}"><span>${neg?"You need to pay":"You will receive"}</span><b>${m2(Math.abs(r.bal))}</b></div></div>
-<div class="c"><b>🍽️ Your Meals</b><div class="chips">${ml.map(d=>`<span class="chip">${d.slice(8)}/${d.slice(5,7)}<b>${f(S.meals[d][u])}</b></span>`).join("")||'<p class="m">No meals yet</p>'}</div></div>
+${(()=>{const [Y,Mo]=mon.split("-").map(Number),first=new Date(Y,Mo-1,1).getDay(),nd=new Date(Y,Mo,0).getDate();let cells="",days=0;for(let i=0;i<first;i++)cells+='<div class="ce e"></div>';
+for(let d=1;d<=nd;d++){const k=mon+"-"+String(d).padStart(2,"0"),v=(S.meals[k]||{})[u]||0;if(v>0)days++;cells+=`<div class="ce${v>0?" on":""}${k===today()?" td":""}"><small>${d}</small>${v>0?`<b>${f(v)}</b>`:""}</div>`}
+return `<div class="c cal"><div class="ch"><b>🍽️ Your Meals</b><span class="bd2 approved">${f(r.meals)} meals</span></div><div class="cs"><div><b>${f(r.meals)}</b><span>Total meals</span></div><div><b>${days}</b><span>Days with meals</span></div><div><b>${days?f(r.meals/days):0}</b><span>Avg per day</span></div></div><div class="cw">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(w=>`<span>${w}</span>`).join("")}</div><div class="cg">${cells}</div></div>`})()}
 <div class="c"><b>🛒 Report Bazar</b><input type="date" id="bd" value="${today()}"><input id="ba" type="number" inputmode="decimal" placeholder="Cost ৳"><input id="bn" placeholder="What was bought"><button id="bs">Send to admin</button><div id="so"></div><p class="m">The admin will verify and add it.</p></div>
 <div id="rq"></div>
 <div class="c"><b>🧾 This month's bazar</b>${bzList(bz,false)}</div>`;

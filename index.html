@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mess Hisab – মেসের মিল ও হিসাব</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f5;--card:#fff;--tx:#17201b;--mut:#66706a;--ac:#0f7b4f;--bd:#dfe5e1;--rd:#c0392b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121613;--card:#1b211d;--tx:#edf2ee;--mut:#9aa59e;--ac:#3fcf8e;--bd:#2b332e;--rd:#ff7a6b}}
+:root[data-theme="dark"]{--bg:#121613;--card:#1b211d;--tx:#edf2ee;--mut:#9aa59e;--ac:#3fcf8e;--bd:#2b332e;--rd:#ff7a6b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Bengali",sans-serif;line-height:1.5}
+.w{max-width:560px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0}
+input,select,textarea,button{font:inherit;width:100%;padding:10px;margin:4px 0;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+button{background:var(--ac);color:#fff;border:0;font-weight:600;cursor:pointer}
+button.g{background:transparent;color:var(--mut);border:1px solid var(--bd)}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin:10px 0}
+.r{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0}
+.q{display:flex;align-items:center;gap:8px;min-width:130px}.q button{width:38px;height:38px;padding:0;margin:0}.q b{min-width:30px;text-align:center}
+.t{display:flex;gap:6px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:6px 0;z-index:2}
+.t button{background:var(--card);color:var(--tx);border:1px solid var(--bd);margin:0}.t button.a{background:var(--ac);color:#fff}
+.m{color:var(--mut);font-size:13px}.p{color:var(--ac);font-weight:700}.n{color:var(--rd);font-weight:700}
+.x{width:auto;padding:4px 10px;margin:0 0 0 4px}.x.d{background:transparent;color:var(--rd);border:1px solid var(--bd)}
+a.b{display:block;text-align:center;padding:11px;border-radius:10px;background:var(--ac);color:#fff;text-decoration:none;font-weight:600;margin:4px 0}
+
+:root{--sh:0 1px 3px rgba(0,0,0,.08),0 6px 16px rgba(0,0,0,.05)}
+body{padding-bottom:88px}.w{max-width:720px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;background:linear-gradient(135deg,#0f7b4f,#0a5a3a);color:#fff;border-radius:18px;padding:14px 16px;box-shadow:var(--sh)}
+.top .nm{font-size:19px;font-weight:700}.top .m{color:rgba(255,255,255,.8)}
+.act{display:flex;gap:6px;align-items:center}.act input{width:auto;margin:0;padding:6px 8px;font-size:13px}.act .x{margin:0;background:rgba(255,255,255,.18);color:#fff;border:0;padding:7px 10px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.sc{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:10px 6px;text-align:center;box-shadow:var(--sh)}.sc span{display:block;font-size:12px;color:var(--mut)}.sc b{font-size:18px}
+.c{border-radius:16px;box-shadow:var(--sh);padding:14px}
+.nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;background:var(--card);border-top:1px solid var(--bd);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+.nav button{position:relative;flex:1;background:transparent;color:var(--mut);border:0;margin:0 2px;padding:6px 0;font-size:12px;border-radius:12px}
+.nav button i{display:block;font-style:normal;font-size:20px}.nav button.a{color:var(--ac);background:rgba(15,123,79,.12)}
+.nav em{position:absolute;top:2px;right:22%;background:#e53935;color:#fff;border-radius:99px;font-style:normal;font-size:11px;padding:0 6px}
+.bn{background:#fff4d6;color:#6a4b00;border-radius:12px;padding:10px 12px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px}.bn .x{background:#6a4b00;color:#fff}
+.fl{display:block;margin-top:8px;font-size:13px;color:var(--mut)}
+@media(min-width:720px){.stats{gap:12px}.sc b{font-size:22px}.nav{left:50%;right:auto;width:720px;transform:translateX(-50%);border-radius:16px 16px 0 0}}
+</style></head><body><div class="w" id="app"></div>
+<script>
+// ===== CONFIG: paste your Firebase values here =====
+const CFG={key:"AIzaSyAZ-DqSWPH_m_glSl9PlkQ-9nmroteMoLI",db:"https://calm-oxide-442412-d1-default-rtdb.firebaseio.com"};
+const $=i=>document.getElementById(i),A=$("app");
+const toast=(m,c)=>{let e=$("ts");if(!e){e=document.createElement("div");e.id="ts";e.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));background:#c0392b;color:#fff;padding:12px;border-radius:10px;z-index:9;text-align:center";document.body.appendChild(e)}e.textContent=m;e.style.background=c||"#c0392b";e.style.display="block";clearTimeout(e.t);e.t=setTimeout(()=>e.style.display="none",4000)};
+window.alert=toast;
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const f=n=>Math.round(n*100)/100,uid=()=>Date.now()+Math.random();
+const lget=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lset=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const clean=s=>String(s).replace(/[.$#\[\]\/]/g,"").trim();
+const norm=d=>Object.assign({name:"আমাদের মেস",mem:[],meals:{},bz:[],dp:[],cm:{}},d);
+let S=null,PD=[],sess=lget("mhs"),idt=null,exp=0,MEM=false,tab="m",date=today(),mon=today().slice(0,7),lk=null,tmr=null;
+const AUTH="https://identitytoolkit.googleapis.com/v1/accounts:";
+async function post(url,body,form){const r=await fetch(url,{method:"POST",headers:{"Content-Type":form?"application/x-www-form-urlencoded":"application/json"},body:form?body:JSON.stringify(body)});const j=await r.json();if(j.error)throw new Error(j.error.message||j.error);return j}
+async function login(email,pw,create){const j=await post(AUTH+(create?"signUp":"signInWithPassword")+"?key="+CFG.key,{email,password:pw,returnSecureToken:true});sess={rt:j.refreshToken,uid:j.localId,email};idt=j.idToken;exp=Date.now()+3.4e6;lset("mhs",sess)}
+async function anon(){const j=await post(AUTH+"signUp?key="+CFG.key,{returnSecureToken:true});idt=j.idToken;exp=Date.now()+3.4e6;return j}
+async function tok(){if(idt&&Date.now()<exp)return idt;const j=await post("https://securetoken.googleapis.com/v1/token?key="+CFG.key,"grant_type=refresh_token&refresh_token="+encodeURIComponent(sess.rt),true);sess.rt=j.refresh_token;idt=j.id_token;exp=Date.now()+3.4e6;if(!MEM)lset("mhs",sess);return idt}
+async function db(m,p,b,q){const r=await fetch(`${CFG.db}/${p}.json?auth=${await tok()}${q||""}`,{method:m,body:b===undefined?undefined:JSON.stringify(b)});if(!r.ok)throw new Error("DB "+r.status);return r.json()}
+const setSt=t=>{const e=$("st");if(e)e.textContent=t};
+const save=()=>{lset("mh3",S);clearTimeout(tmr);setSt("সেভ হচ্ছে…");tmr=setTimeout(async()=>{try{await db("PUT","mess/"+sess.uid+"/data",S);setSt("☁️ সেভ হয়েছে")}catch(e){setSt("⚠️ সেভ হয়নি: "+e.message)}},700)};
+const loadPend=async()=>{const o=await db("GET","mess/"+sess.uid+"/pending")||{};PD=Object.keys(o).map(k=>Object.assign({k},o[k]))};
+const wa=n=>{n=String(n||"").replace(/\D/g,"");return n[0]=="0"?"88"+n:n};
+const bkText=()=>JSON.stringify(S);
+function dlBackup(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([bkText()],{type:"application/json"}));a.download="mess-backup-"+today()+".json";document.body.appendChild(a);a.click();a.remove()}
+async function waBackup(){const name="mess-backup-"+today()+".json",file=new File([bkText()],name,{type:"application/json"});
+try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});S.lastWa=today();save();draw();return}}catch(e){if(e&&e.name=="AbortError")return}
+dlBackup();toast("ফাইল ডাউনলোড হয়েছে। হোয়াটসঅ্যাপে ডকুমেন্ট হিসেবে নিজেকে পাঠান।","#0f7b4f");S.lastWa=today();save()}
+async function autoSnap(){try{const t=today();if(!S||!S.mem.length||S.snap===t)return;await db("PUT","mess/"+sess.uid+"/backups/"+t,S);S.snap=t;save();const ks=Object.keys(await db("GET","mess/"+sess.uid+"/backups",undefined,"&shallow=true")||{}).sort();for(const k of ks.slice(0,Math.max(0,ks.length-14)))await db("DELETE","mess/"+sess.uid+"/backups/"+k)}catch(e){}}
+async function snapList(){const el=$("bl");if(!el)return;try{const ks=Object.keys(await db("GET","mess/"+sess.uid+"/backups",undefined,"&shallow=true")||{}).sort().reverse();
+el.innerHTML=ks.length?'<p class="m">ক্লাউড অটো-ব্যাকআপ:</p>'+ks.map(k=>`<div class="r"><span>${k}</span><button class="x" data-snap="${k}">রিস্টোর</button></div>`).join(""):'<p class="m">ক্লাউডে এখনো ব্যাকআপ নেই</p>';
+el.querySelectorAll("[data-snap]").forEach(b=>b.onclick=async()=>{if(b.dataset.s!="1"){b.dataset.s="1";b.textContent="নিশ্চিত?";return}try{S=norm(await db("GET","mess/"+sess.uid+"/backups/"+b.dataset.snap));save();draw()}catch(e){toast(e.message)}})}catch(e){el.textContent=""}}
+let seen=new Set();
+function badge(){const b=document.querySelector('[data-t="b"]');if(!b)return;let e=b.querySelector("em");if(PD.length){if(!e){e=document.createElement("em");b.appendChild(e)}e.textContent=PD.length}else if(e)e.remove()}
+async function poll(){if(MEM||!sess||!S)return;try{await loadPend();const nw=PD.filter(p=>!seen.has(p.k));PD.forEach(p=>seen.add(p.k));
+if(nw.length){const t="🛒 "+nw.map(p=>p.u+" ৳"+f(+p.a)).join(", ");toast(t,"#0f7b4f");try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}try{if(Notification.permission=="granted")new Notification("নতুন বাজার",{body:t})}catch(e){}}
+document.title=(PD.length?"("+PD.length+") ":"")+"Mess Hisab";badge();const ae=document.activeElement;if(nw.length&&tab=="b"&&!(ae&&ae.matches("input,textarea,select")))draw()}catch(e){}}
+const cpy=(i,b)=>{const e=$(i);e.select();e.setSelectionRange(0,99999);try{navigator.clipboard.writeText(e.value)}catch(x){}try{document.execCommand("copy")}catch(x){}$(b).textContent="কপি হয়েছে ✓"};
+const shareCard=t=>`<div class="c"><b>লিংক তৈরি ✓</b><textarea id="sc" rows="3" readonly>${esc(t)}</textarea><button id="cp">কপি করুন</button><a class="b" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(t)}">হোয়াটসঅ্যাপে পাঠান</a><button class="g" id="cl">বন্ধ করুন</button></div>`;
+function calc(){const ms={};S.mem.forEach(m=>ms[m]=0);
+for(const d in S.meals)if(d.startsWith(mon))for(const m in S.meals[d])if(m in ms)ms[m]+=S.meals[d][m];
+const tm=Object.values(ms).reduce((a,b)=>a+b,0),tb=S.bz.filter(x=>x.d.startsWith(mon)).reduce((a,x)=>a+x.a,0),rate=tm?tb/tm:0,cm=(S.cm[mon]||0)/(S.mem.length||1);
+const rows=S.mem.map(m=>{const dep=S.dp.filter(x=>x.d.startsWith(mon)&&x.m==m).reduce((a,x)=>a+x.a,0),cost=ms[m]*rate+cm;return{m,meals:ms[m],dep,cost,bal:dep-cost}});
+return{tm,tb,rate,rows,cm}}
+async function boot(){
+if(CFG.key.startsWith("YOUR"))return A.innerHTML=`<h1>🍛 Mess Hisab</h1><div class="c"><b>সেটআপ বাকি</b><p class="m">ফাইলের শুরুতে CFG-তে আপনার Firebase API key আর database URL বসান।</p></div>`;
+const h=location.hash;if(h.startsWith("#v="))return memberBoot(h.slice(3));
+if(!sess)return loginUI();
+try{await tok();const d=await db("GET","mess/"+sess.uid+"/data");S=d?norm(d):null;if(S)await loadPend();PD.forEach(p=>seen.add(p.k));draw();autoSnap()}
+catch(e){const c=lget("mh3");if(c){S=norm(c);draw();setSt("⚠️ অফলাইন: "+e.message)}else{toast(e.message);loginUI()}}}
+function loginUI(){A.innerHTML=`<h1>🍛 Mess Hisab</h1><p class="m">অ্যাডমিন লগইন। শুধু অ্যাডমিন মিল, জমা ও সদস্য বদলাতে পারে।</p><div class="c"><input id="em" type="email" placeholder="ইমেইল"><input id="pw" type="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)"><button id="li">লগইন</button><button class="g" id="su">নতুন মেস খুলুন (সাইন আপ)</button></div>`;
+const go=c=>async()=>{try{await login($("em").value.trim(),$("pw").value,c);boot()}catch(e){toast(e.message)}};
+$("li").onclick=go(false);$("su").onclick=go(true)}
+function setup(){A.innerHTML=`<h1>🍛 নতুন মেস</h1><div class="c"><input id="n" placeholder="মেসের নাম"><textarea id="u" rows="5" placeholder="সদস্যদের নাম (কমা বা নতুন লাইন দিয়ে)"></textarea><button id="go">শুরু করুন</button></div>`;
+$("go").onclick=()=>{const m=$("u").value.split(/[,\n]/).map(clean).filter(Boolean);if(!m.length)return alert("কমপক্ষে একজন সদস্য দিন");S=norm({name:$("n").value.trim()||"আমাদের মেস",mem:[...new Set(m)]});save();draw()}}
+function draw(){if(!S)return setup();if(!window.pt)window.pt=setInterval(poll,20000);
+const T=[["m","মিল","🍽️"],["b","বাজার","🛒"],["d","জমা","💰"],["s","হিসাব","📊"]],R0=calc();
+const bnr=(S.lastWa!==today()&&S.mem.length)?'<div class="bn"><span>📲 আজকের ব্যাকআপ হোয়াটসঅ্যাপে পাঠানো হয়নি</span><button class="x" id="bnb">পাঠান</button></div>':"";
+const nav=`<nav class="nav">${T.map(x=>`<button data-t="${x[0]}" class="${tab==x[0]?"a":""}"><i>${x[2]}</i>${x[1]}${x[0]=="b"&&PD.length?"<em>"+PD.length+"</em>":""}</button>`).join("")}</nav>`;
+let h=`<div class="top"><div><div class="nm">${esc(S.name)}</div><div class="m" id="st">☁️</div></div><div class="act"><input type="month" id="mo" value="${mon}"><button class="x" id="nt">🔔</button><button class="x" id="lo">লগআউট</button></div></div><div class="stats"><div class="sc"><span>মোট বাজার</span><b>৳${f(R0.tb)}</b></div><div class="sc"><span>মোট মিল</span><b>${f(R0.tm)}</b></div><div class="sc"><span>মিল রেট</span><b>৳${f(R0.rate)}</b></div></div>${bnr}`;
+if(tab=="m"){const dm=S.meals[date]||{},tot=S.mem.reduce((a,m)=>a+(dm[m]||0),0);
+h+=`<div class="c"><input type="date" id="dt" value="${date}"><div class="m">এই দিনের মোট মিল: <b>${f(tot)}</b></div>${S.mem.map((m,i)=>`<div class="r"><span>${esc(m)}</span><div class="q"><button data-i="${i}" data-d="-0.5">−</button><b>${f(dm[m]||0)}</b><button data-i="${i}" data-d="0.5">+</button></div></div>`).join("")}</div><div class="c"><input id="nm" placeholder="নতুন সদস্যের নাম"><button class="g" id="am">সদস্য যোগ করুন</button></div>`}
+if(tab=="b"){const l=S.bz.filter(x=>x.d.startsWith(mon)).sort((a,b)=>b.d.localeCompare(a.d));
+h+=`<div class="c"><div class="r"><b>সদস্যদের পাঠানো বাজার</b><button class="x" id="rf">রিফ্রেশ</button></div>${PD.map(x=>`<div class="r"><span>${esc(x.u)}: ${esc(String(x.d).slice(5))} ${esc(x.n||"")}<br><b>৳${f(+x.a)}</b></span><span><button class="x" data-ok="${x.k}">✓</button><button class="x d" data-no="${x.k}">✗</button></span></div>`).join("")||'<p class="m">নতুন কিছু নেই</p>'}</div>
+<div class="c"><input type="date" id="dt" value="${date}"><input id="ba" type="number" inputmode="decimal" placeholder="বাজারের খরচ ৳"><input id="bn" placeholder="কী কেনা হলো"><button id="ab">বাজার যোগ করুন</button></div><div class="c"><b>${mon} এর বাজার</b>${l.map(x=>`<div class="r"><span>${x.d.slice(5)} ${esc(x.n||"")}<br><b>৳${f(x.a)}</b></span><button class="x d" data-x="b${x.id}">মুছুন</button></div>`).join("")||'<p class="m">এখনো কিছু নেই</p>'}</div>`}
+if(tab=="d"){const l=S.dp.filter(x=>x.d.startsWith(mon)).sort((a,b)=>b.d.localeCompare(a.d));
+h+=`<div class="c"><input type="date" id="dt" value="${date}"><select id="dm">${S.mem.map(m=>`<option>${esc(m)}</option>`).join("")}</select><input id="da" type="number" inputmode="decimal" placeholder="জমার পরিমাণ ৳"><button id="ad">জমা যোগ করুন</button></div><div class="c"><b>${mon} এর জমা</b>${l.map(x=>`<div class="r"><span>${x.d.slice(5)} ${esc(x.m)}<br><b>৳${f(x.a)}</b></span><button class="x d" data-x="d${x.id}">মুছুন</button></div>`).join("")||'<p class="m">এখনো কিছু নেই</p>'}</div>`}
+if(tab=="s"){const r=calc();if(lk)h+=shareCard(lk.t);
+h+=`<div class="c"><input id="cm" type="number" inputmode="decimal" placeholder="কমন খরচ ৳ (সমান ভাগ)" value="${S.cm[mon]||""}"><input id="ph" placeholder="আপনার হোয়াটসঅ্যাপ নম্বর (সদস্যরা জানাতে পারবে)" value="${esc(S.ph||"")}"></div>
+<div class="c">${r.rows.map(x=>`<div class="r"><span><b>${esc(x.m)}</b><br><span class="m">${f(x.meals)} মিল · খরচ ৳${f(x.cost)} · জমা ৳${f(x.dep)}</span><br><span class="${x.bal<0?"n":"p"}">${x.bal<0?"দিতে হবে":"ফেরত পাবে"} ৳${f(Math.abs(x.bal))}</span></span><button class="x" data-l="${esc(x.m)}">লিংক</button></div>`).join("")}</div><p class="m">সদস্যের লিংক সবসময় লাইভ হিসাব দেখায়। একবার পাঠালেই হবে।</p><div class="c"><b>ব্যাকআপ</b><p class="m">${S.lastWa?"শেষ হোয়াটসঅ্যাপ ব্যাকআপ: "+S.lastWa:"এখনো হোয়াটসঅ্যাপে ব্যাকআপ পাঠানো হয়নি"}। অ্যাপ খুললে প্রতিদিন ক্লাউডে অটো-ব্যাকআপ হয় (শেষ ১৪ দিন)।</p><button id="bw">📲 হোয়াটসঅ্যাপে ব্যাকআপ পাঠান</button><button class="g" id="bd2">ফাইল ডাউনলোড</button><label class="fl">ফাইল থেকে রিস্টোর<input type="file" id="bf" accept=".json,application/json"></label><div id="bl"></div></div><div class="c"><input id="rq" placeholder="মুছতে এখানে RESET লিখুন"><button class="g" id="rs">সব ডাটা মুছে নতুন করে শুরু</button></div>`}
+A.innerHTML=h+nav;bind()}
+function bind(){A.querySelectorAll("[data-t]").forEach(b=>b.onclick=async()=>{tab=b.dataset.t;lk=null;if(tab=="b")try{await loadPend()}catch(e){}draw()});
+$("lo").onclick=()=>{sess=null;idt=null;lset("mhs",null);lset("mh3",null);S=null;loginUI()};
+const dt=$("dt");if(dt)dt.onchange=()=>{if(dt.value){date=dt.value;mon=date.slice(0,7);draw()}};
+A.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{const m=S.mem[+b.dataset.i],d=S.meals[date]=S.meals[date]||{};d[m]=Math.max(0,(d[m]||0)+ +b.dataset.d);save();const y=scrollY;draw();scrollTo(0,y)});
+A.querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{const k=b.dataset.x,id=+k.slice(1);if(b.dataset.s!="1"){b.dataset.s="1";b.textContent="নিশ্চিত?";return}if(k[0]=="b")S.bz=S.bz.filter(x=>x.id!=id);else S.dp=S.dp.filter(x=>x.id!=id);save();draw()});
+A.querySelectorAll("[data-ok]").forEach(b=>b.onclick=async()=>{const p=PD.find(x=>x.k==b.dataset.ok);S.bz.push({id:uid(),d:String(p.d),a:+p.a,n:(p.n||"")+" ("+p.u+")"});save();try{await db("DELETE","mess/"+sess.uid+"/pending/"+p.k)}catch(e){}PD=PD.filter(x=>x!=p);draw()});
+A.querySelectorAll("[data-no]").forEach(b=>b.onclick=async()=>{try{await db("DELETE","mess/"+sess.uid+"/pending/"+b.dataset.no)}catch(e){}PD=PD.filter(x=>x.k!=b.dataset.no);draw()});
+A.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{const m=b.dataset.l;lk={t:`${S.name}: ${m}, আপনার মিল ও হিসাব এখানে দেখুন:\n${location.href.split("#")[0]}#v=${sess.uid}~${encodeURIComponent(m)}`};draw();scrollTo(0,0)});
+if($("cp"))$("cp").onclick=()=>cpy("sc","cp");
+if($("cl"))$("cl").onclick=()=>{lk=null;draw()};
+if($("rf"))$("rf").onclick=async()=>{try{await loadPend();draw()}catch(e){toast(e.message)}};
+if($("am"))$("am").onclick=()=>{const n=clean($("nm").value);if(n&&!S.mem.includes(n)){S.mem.push(n);save();draw()}};
+if($("ab"))$("ab").onclick=()=>{const a=+$("ba").value;if(a>0){S.bz.push({id:uid(),d:date,a,n:$("bn").value.trim()});save();draw()}};
+if($("ad"))$("ad").onclick=()=>{const a=+$("da").value;if(a>0){S.dp.push({id:uid(),d:date,m:$("dm").value,a});save();draw()}};
+if($("mo"))$("mo").onchange=e=>{if(e.target.value){mon=e.target.value;draw()}};
+if($("cm"))$("cm").onchange=e=>{S.cm[mon]=+e.target.value||0;save();draw()};
+if($("bw")){$("bw").onclick=waBackup;$("bd2").onclick=dlBackup;snapList();$("bf").onchange=e=>{const fl=e.target.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.mem)throw 0;S=norm(o);save();draw();toast("রিস্টোর হয়েছে","#0f7b4f")}catch(x){toast("ফাইলটি পড়া যায়নি")}};rd.readAsText(fl)}}
+if($("bnb"))$("bnb").onclick=waBackup;
+if($("ph"))$("ph").onchange=e=>{S.ph=e.target.value.trim();save()};
+if($("nt"))$("nt").onclick=async()=>{try{const p=await Notification.requestPermission();toast(p=="granted"?"নোটিফিকেশন চালু হয়েছে":"নোটিফিকেশন বন্ধ",p=="granted"?"#0f7b4f":null)}catch(e){toast("এই ব্রাউজারে সাপোর্ট নেই")}};
+if($("rs"))$("rs").onclick=async()=>{if($("rq").value.trim()!="RESET")return alert("মুছতে উপরের ঘরে RESET লিখুন");try{await db("DELETE","mess/"+sess.uid+"/data")}catch(e){}S=null;lset("mh3",null);draw()}}
+async function memberBoot(v){MEM=true;const i=v.indexOf("~"),id=v.slice(0,i),u=decodeURIComponent(v.slice(i+1));A.innerHTML='<p class="m">লোড হচ্ছে…</p>';
+try{const j=await anon();sess={rt:j.refreshToken,uid:j.localId};await load(id,u)}catch(e){A.innerHTML=`<p class="n">লোড হয়নি: ${esc(e.message)}</p>`}}
+async function load(id,u){const d=await db("GET","mess/"+id+"/data");if(!d)return A.innerHTML="<p class='n'>মেস পাওয়া যায়নি</p>";S=norm(d);member(id,u)}
+function member(id,u){const r=calc().rows.find(x=>x.m==u);if(!r)return A.innerHTML=`<p class="n">${esc(u)} নামে কোনো সদস্য নেই</p>`;
+const ml=Object.keys(S.meals).filter(d=>d.startsWith(mon)&&S.meals[d][u]>0).sort(),bz=S.bz.filter(x=>x.d.startsWith(mon)).sort((a,b)=>a.d.localeCompare(b.d)),R=calc();
+A.innerHTML=`<h1>🍛 ${esc(S.name)}</h1><p class="m">${esc(u)}</p><input type="month" id="mo" value="${mon}"><button class="g" id="rf">রিফ্রেশ</button>
+<div class="c"><div class="r"><span>মিল রেট</span><b>৳${f(R.rate)}</b></div><div class="r"><span>আপনার মোট মিল</span><b>${f(r.meals)}</b></div><div class="r"><span>খরচ</span><b>৳${f(r.cost)}</b></div><div class="r"><span>জমা</span><b>৳${f(r.dep)}</b></div><div class="r"><b>${r.bal<0?"দিতে হবে":"ফেরত পাবেন"}</b><b class="${r.bal<0?"n":"p"}">৳${f(Math.abs(r.bal))}</b></div></div>
+<div class="c"><b>আপনার মিলের তালিকা</b>${ml.map(d=>`<div class="r"><span>${d.slice(5)}</span><b>${f(S.meals[d][u])} মিল</b></div>`).join("")||'<p class="m">এখনো কোনো মিল নেই</p>'}</div>
+<div class="c"><b>বাজার জানান</b><input type="date" id="bd" value="${today()}"><input id="ba" type="number" inputmode="decimal" placeholder="খরচ ৳"><input id="bn" placeholder="কী কেনা হলো"><button id="bs">অ্যাডমিনকে পাঠান</button><div id="so"></div><p class="m">অ্যাডমিন যাচাই করে যোগ করবেন।</p></div>
+<div class="c"><b>এই মাসের বাজার</b>${bz.map(x=>`<div class="r"><span>${x.d.slice(5)} ${esc(x.n||"")}</span><b>৳${f(x.a)}</b></div>`).join("")||'<p class="m">এখনো কিছু নেই</p>'}</div>`;
+$("mo").onchange=e=>{if(e.target.value){mon=e.target.value;member(id,u)}};
+$("rf").onclick=()=>load(id,u).catch(e=>toast(e.message));
+$("bs").onclick=async()=>{const a=+$("ba").value;if(!(a>0))return alert("খরচের পরিমাণ দিন");try{await db("POST","mess/"+id+"/pending",{u,d:$("bd").value||today(),a,n:$("bn").value.trim()});$("ba").value="";$("bn").value="";$("bs").textContent="পাঠানো হয়েছে ✓";if(S.ph)$("so").innerHTML=`<a class="b" target="_blank" rel="noopener" href="https://wa.me/${wa(S.ph)}?text=${encodeURIComponent("🛒 "+u+" ৳"+a+" বাজার জানিয়েছে। অ্যাপে দেখুন।")}">📲 হোয়াটসঅ্যাপে অ্যাডমিনকে জানান</a>`}catch(e){toast(e.message)}}}
+boot();
+</script></body></html>

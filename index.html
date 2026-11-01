@@ -95,7 +95,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .ce[data-k]{cursor:pointer}.ce.sel{outline:2px solid #2563eb}.ce u{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:#2563eb}
 .lg{margin-top:8px}.ld{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2563eb;vertical-align:middle;margin-right:4px;text-decoration:none}
 .dd{margin-top:12px;border:1px solid var(--bd);border-radius:14px;padding:12px;background:var(--bg)}
-.dhd2{font-weight:700;margin-bottom:8px}.dg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
+.dhd2{font-weight:700;margin-bottom:8px}.dg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:6px}
 .dg div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:8px 6px;text-align:center}.dg span{display:block;font-size:11px;color:var(--mut)}.dg b{font-size:15px}
 .dtab{margin-top:14px}.dr{display:grid;grid-template-columns:1.1fr .6fr .9fr 1.5fr;gap:6px;padding:8px 0;border-top:1px solid var(--bd);font-size:13px;align-items:center}
 .dr span:nth-child(n+2){text-align:right;font-variant-numeric:tabular-nums}.dr.dhd{color:var(--mut);font-size:11px;border-top:0}.dr.tt{font-weight:700;border-top:2px solid var(--bd)}
@@ -127,10 +127,11 @@ const o=await db("GET","mess/"+sess.uid+"/pending")||{};for(const k in o){const 
 const wa=n=>{n=String(n||"").replace(/\D/g,"");return n[0]=="0"?"88"+n:n};
 const bkText=()=>JSON.stringify(S);
 function dlBackup(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([bkText()],{type:"application/json"}));a.download="mess-backup-"+today()+".json";document.body.appendChild(a);a.click();a.remove();toast("Backup file downloaded","#0f7b4f")}
-async function autoSnap(){try{const t=today();if(!S||!S.mem.length||S.snap===t)return;await db("PUT","mess/"+sess.uid+"/backups/"+t,S);S.snap=t;save();const ks=Object.keys(await db("GET","mess/"+sess.uid+"/backups",undefined,"&shallow=true")||{}).sort();for(const k of ks.slice(0,Math.max(0,ks.length-95)))await db("DELETE","mess/"+sess.uid+"/backups/"+k)}catch(e){}}
-async function snapList(){const el=$("bl");if(!el)return;try{const ks=Object.keys(await db("GET","mess/"+sess.uid+"/backups",undefined,"&shallow=true")||{}).sort().reverse();
-el.innerHTML=ks.length?'<p class="m">Cloud auto-backups:</p>'+ks.map(k=>`<div class="r"><span>${k}</span><button class="x" data-snap="${k}">Restore</button></div>`).join(""):'<p class="m">No cloud backups yet</p>';
-el.querySelectorAll("[data-snap]").forEach(b=>b.onclick=async()=>{if(b.dataset.s!="1"){b.dataset.s="1";b.textContent="Sure?";return}try{S=norm(await db("GET","mess/"+sess.uid+"/backups/"+b.dataset.snap));save();draw()}catch(e){toast(e.message)}})}catch(e){el.textContent=""}}
+async function autoSnap(){try{const t=today();if(!S||!S.mem.length)return;const cur=await db("GET","mess/"+sess.uid+"/backups/latest/date");if(cur===t)return;await db("PUT","mess/"+sess.uid+"/backups/latest",{date:t,at:Date.now(),data:S});
+const ks=Object.keys(await db("GET","mess/"+sess.uid+"/backups",undefined,"&shallow=true")||{});for(const k of ks)if(k!=="latest"&&k!=="before-restore")await db("DELETE","mess/"+sess.uid+"/backups/"+k)}catch(e){}}
+async function snapList(){const el=$("bl");if(!el)return;try{const b=await db("GET","mess/"+sess.uid+"/backups/latest");if(!b||!b.data){el.innerHTML='<p class="m">No cloud backup yet. It is created when you log in.</p>';return}
+el.innerHTML=`<p class="m">Cloud backup (automatic, updated on your first login each day)</p><div class="r"><span>Last updated: ${esc(b.date)}</span><button class="x" id="cbr">Restore</button></div>`;
+$("cbr").onclick=async()=>{const bt=$("cbr");if(bt.dataset.s!="1"){bt.dataset.s="1";bt.textContent="Sure?";return}try{try{await db("PUT","mess/"+sess.uid+"/backups/before-restore",S)}catch(e){}S=norm(b.data);save();draw();toast("Cloud backup restored","#0f7b4f")}catch(e){toast(e.message)}}}catch(e){el.textContent=""}}
 let seen=new Set();
 function badge(){const b=document.querySelector('[data-t="b"]');if(!b)return;let e=b.querySelector("em");if(PD.length){if(!e){e=document.createElement("em");b.appendChild(e)}e.textContent=PD.length}else if(e)e.remove()}
 async function poll(){if(MEM||!sess||!S)return;try{await loadPend();const nw=PD.filter(p=>!seen.has(p.k));PD.forEach(p=>seen.add(p.k));
@@ -244,7 +245,7 @@ if($("fr"))$("fr").onchange=e=>{S.rent=S.rent||{};S.rent[mon]=+e.target.value||0
 if($("fi"))$("fi").onchange=e=>{S.net=S.net||{};S.net[mon]=+e.target.value||0;save();draw()};
 if($("bd2")){$("bd2").onclick=dlBackup;snapList();const bf=$("bf"),br=$("br");bf.onchange=()=>{br.disabled=!bf.files[0]};
 br.onclick=()=>{const fl=bf.files[0];if(!fl)return toast("Choose a backup file first");const rd=new FileReader();rd.onload=async()=>{let o;try{o=JSON.parse(rd.result);if(!Array.isArray(o.mem))throw 0}catch(x){return toast("This is not a valid backup file")}
-try{await db("PUT","mess/"+sess.uid+"/backups/"+today()+"-before-restore",S)}catch(e){}
+try{await db("PUT","mess/"+sess.uid+"/backups/before-restore",S)}catch(e){}
 S=norm(o);save();draw();toast("Data restored","#0f7b4f")};rd.readAsText(fl)}}
 if($("cd"))$("cd").onclick=sendCard;if($("cd2"))$("cd2").onclick=sendCard;
 if($("cr"))$("cr").onchange=e=>{S.cr=e.target.checked;save();draw()};
@@ -279,12 +280,11 @@ ${[["🍽️","Meal cost",f(r.meals)+" meals × "+m2(R.rate),r.mc,"#0f7b4f"],["�
 <div class="it"><span>Total cost</span><b>${m2(r.cost)}</b></div>
 <div class="il cr"><i style="background:#0f7b4f">🛒</i><div><b>Bazar you paid</b><small>Credited to you</small></div><em>− ${m2(r.bz)}</em></div>
 <div class="ib ${neg?"neg":"pos"}"><span>${neg?"You need to pay":"You will receive"}</span><b>${m2(Math.abs(r.bal))}</b></div></div>
-${(()=>{const [Y,Mo]=mon.split("-").map(Number),first=new Date(Y,Mo-1,1).getDay(),nd=new Date(Y,Mo,0).getDate();let cells="",days=0,rowsH="";const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],DAYS={};for(let i=0;i<first;i++)cells+='<div class="ce e"></div>';
-for(let d=1;d<=nd;d++){const k=mon+"-"+String(d).padStart(2,"0"),v=(S.meals[k]||{})[u]||0,all=S.mem.reduce((q,m)=>q+((S.meals[k]||{})[m]||0),0),items=S.bz.filter(x=>x.d===k),bt=items.reduce((q,x)=>q+x.a,0);DAYS[k]={me:v,all,bt,items};if(v>0)days++;
-cells+=`<div class="ce${v>0?" on":""}${k===today()?" td":""}" data-k="${k}"><small>${d}</small>${bt>0?"<u></u>":""}${v>0?`<b>${f(v)}</b>`:""}</div>`;
-if(all>0||bt>0)rowsH+=`<div class="dr"><span>${String(d).padStart(2,"0")} ${MN[Mo-1]}</span><span>${f(v)}</span><span>${f(all)}</span><span>${bt>0?m2(bt):"-"}</span></div>`}
+${(()=>{const [Y,Mo]=mon.split("-").map(Number),first=new Date(Y,Mo-1,1).getDay(),nd=new Date(Y,Mo,0).getDate();let cells="",days=0;const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],DAYS={};for(let i=0;i<first;i++)cells+='<div class="ce e"></div>';
+for(let d=1;d<=nd;d++){const k=mon+"-"+String(d).padStart(2,"0"),v=(S.meals[k]||{})[u]||0,items=S.bz.filter(x=>x.d===k&&x.b===u),bt=items.reduce((q,x)=>q+x.a,0);DAYS[k]={me:v,bt,items};if(v>0)days++;
+cells+=`<div class="ce${v>0?" on":""}${k===today()?" td":""}" data-k="${k}"><small>${d}</small>${bt>0?"<u></u>":""}${v>0?`<b>${f(v)}</b>`:""}</div>`}
 window.__days=DAYS;
-return `<div class="c cal"><div class="ch"><b>🍽️ Your Meals</b><span class="bd2 approved">${f(r.meals)} meals</span></div><div class="cs"><div><b>${f(r.meals)}</b><span>Total meals</span></div><div><b>${days}</b><span>Days with meals</span></div><div><b>${days?f(r.meals/days):0}</b><span>Avg per day</span></div></div><div class="cw">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(w=>`<span>${w}</span>`).join("")}</div><div class="cg">${cells}</div><div class="m lg"><u class="ld"></u> Bazar done that day · tap a day for details</div><div class="dd" id="dd"></div><div class="dtab"><b>📅 Daily summary</b><div class="dr dhd"><span>Date</span><span>You</span><span>All meals</span><span>Bazar</span></div>${rowsH||'<p class="m">No meals or bazar yet</p>'}<div class="dr tt"><span>Total</span><span>${f(r.meals)}</span><span>${f(R.tm)}</span><span>${m2(R.tb)}</span></div></div></div>`})()}
+return `<div class="c cal"><div class="ch"><b>🍽️ Your Meals</b><span class="bd2 approved">${f(r.meals)} meals</span></div><div class="cs"><div><b>${f(r.meals)}</b><span>Total meals</span></div><div><b>${days}</b><span>Days with meals</span></div><div><b>${days?f(r.meals/days):0}</b><span>Avg per day</span></div></div><div class="cw">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(w=>`<span>${w}</span>`).join("")}</div><div class="cg">${cells}</div><div class="m lg"><u class="ld"></u> You did bazar that day · tap a day for details</div><div class="dd" id="dd"></div></div>`})()}
 <div class="c"><b>🛒 Report Bazar</b><input type="date" id="bd" value="${today()}"><input id="ba" type="number" inputmode="decimal" placeholder="Cost ৳"><input id="bn" placeholder="What was bought"><button id="bs">Send to admin</button><div id="so"></div><p class="m">The admin will verify and add it.</p></div>
 <div id="rq"></div>
 <div class="c"><b>🧾 This month's bazar</b>${bzList(bz,false)}</div>`;
@@ -292,7 +292,7 @@ $("mo").onchange=e=>{if(e.target.value){mon=e.target.value;member(id,u)}};
 $("rf").onclick=()=>load(id,u).catch(e=>toast(e.message));
 $("mn").onclick=async()=>{try{const q=await Notification.requestPermission();toast(q=="granted"?"Notifications enabled":"Notifications off",q=="granted"?"#0f7b4f":null)}catch(e){toast("Not supported in this browser")}};
 (()=>{const D=window.__days||{},dd=$("dd");if(!dd)return;const show=k=>{const x=D[k];if(!x)return;const dt=new Date(k+"T00:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
-dd.innerHTML=`<div class="dhd2">${dt}</div><div class="dg"><div><span>Your meals</span><b>${f(x.me)}</b></div><div><span>All members' meals</span><b>${f(x.all)}</b></div><div><span>Bazar total</span><b>${m2(x.bt)}</b></div></div>`+(x.items.length?x.items.map(i=>`<div class="r"><span>${esc(i.n||"Bazar")}<br><span class="m">${esc(i.b||"Other")}</span></span><b>${m2(i.a)}</b></div>`).join(""):'<p class="m">No bazar on this day</p>')};
+dd.innerHTML=`<div class="dhd2">${dt}</div><div class="dg"><div><span>Your meals</span><b>${f(x.me)}</b></div><div><span>Your bazar</span><b>${m2(x.bt)}</b></div></div>`+(x.items.length?x.items.map(i=>`<div class="r"><span>${esc(i.n||"Bazar")}</span><b>${m2(i.a)}</b></div>`).join(""):'<p class="m">You did no bazar on this day</p>')};
 A.querySelectorAll(".ce[data-k]").forEach(c=>c.onclick=()=>{A.querySelectorAll(".ce.sel").forEach(e=>e.classList.remove("sel"));c.classList.add("sel");show(c.dataset.k)});
 const tc=A.querySelector('.ce[data-k="'+today()+'"]');if(tc)tc.click();else dd.innerHTML='<p class="m">Tap a day to see its meals and bazar.</p>'})();
 reqs(id,u,true);

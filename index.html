@@ -92,10 +92,18 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .ce.e{background:transparent;border:0}.ce small{position:absolute;top:3px;left:5px;font-size:10px;color:var(--mut)}
 .ce b{font-size:clamp(13px,4vw,18px);color:var(--ac)}.ce.on{background:rgba(15,123,79,.14);border-color:rgba(15,123,79,.35)}.ce.td{outline:2px solid var(--ac)}
 .rqa{display:flex;align-items:center;gap:6px}.rqa .x{margin:0;padding:3px 9px}
+.ce[data-k]{cursor:pointer}.ce.sel{outline:2px solid #2563eb}.ce u{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:#2563eb}
+.lg{margin-top:8px}.ld{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2563eb;vertical-align:middle;margin-right:4px;text-decoration:none}
+.dd{margin-top:12px;border:1px solid var(--bd);border-radius:14px;padding:12px;background:var(--bg)}
+.dhd2{font-weight:700;margin-bottom:8px}.dg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
+.dg div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:8px 6px;text-align:center}.dg span{display:block;font-size:11px;color:var(--mut)}.dg b{font-size:15px}
+.dtab{margin-top:14px}.dr{display:grid;grid-template-columns:1.1fr .6fr .9fr 1.5fr;gap:6px;padding:8px 0;border-top:1px solid var(--bd);font-size:13px;align-items:center}
+.dr span:nth-child(n+2){text-align:right;font-variant-numeric:tabular-nums}.dr.dhd{color:var(--mut);font-size:11px;border-top:0}.dr.tt{font-weight:700;border-top:2px solid var(--bd)}
 </style></head><body><div class="w" id="app"></div><div class="cp">© Md. Hafizur Rahman</div>
 <script>
 // ===== CONFIG: paste your Firebase values here =====
-const CFG={key:"AIzaSyAZ-DqSWPH_m_glSl9PlkQ-9nmroteMoLI",db:"https://calm-oxide-442412-d1-default-rtdb.firebaseio.com"};const $=i=>document.getElementById(i),A=$("app");
+const CFG={key:"AIzaSyAZ-DqSWPH_m_glSl9PlkQ-9nmroteMoLI",db:"https://calm-oxide-442412-d1-default-rtdb.firebaseio.com"};
+const $=i=>document.getElementById(i),A=$("app");
 const toast=(m,c)=>{let e=$("ts");if(!e){e=document.createElement("div");e.id="ts";e.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));background:#c0392b;color:#fff;padding:12px;border-radius:10px;z-index:9;text-align:center";document.body.appendChild(e)}e.textContent=m;e.style.background=c||"#c0392b";e.style.display="block";clearTimeout(e.t);e.t=setTimeout(()=>e.style.display="none",4000)};
 window.alert=toast;
 const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
@@ -271,15 +279,22 @@ ${[["🍽️","Meal cost",f(r.meals)+" meals × "+m2(R.rate),r.mc,"#0f7b4f"],["�
 <div class="it"><span>Total cost</span><b>${m2(r.cost)}</b></div>
 <div class="il cr"><i style="background:#0f7b4f">🛒</i><div><b>Bazar you paid</b><small>Credited to you</small></div><em>− ${m2(r.bz)}</em></div>
 <div class="ib ${neg?"neg":"pos"}"><span>${neg?"You need to pay":"You will receive"}</span><b>${m2(Math.abs(r.bal))}</b></div></div>
-${(()=>{const [Y,Mo]=mon.split("-").map(Number),first=new Date(Y,Mo-1,1).getDay(),nd=new Date(Y,Mo,0).getDate();let cells="",days=0;for(let i=0;i<first;i++)cells+='<div class="ce e"></div>';
-for(let d=1;d<=nd;d++){const k=mon+"-"+String(d).padStart(2,"0"),v=(S.meals[k]||{})[u]||0;if(v>0)days++;cells+=`<div class="ce${v>0?" on":""}${k===today()?" td":""}"><small>${d}</small>${v>0?`<b>${f(v)}</b>`:""}</div>`}
-return `<div class="c cal"><div class="ch"><b>🍽️ Your Meals</b><span class="bd2 approved">${f(r.meals)} meals</span></div><div class="cs"><div><b>${f(r.meals)}</b><span>Total meals</span></div><div><b>${days}</b><span>Days with meals</span></div><div><b>${days?f(r.meals/days):0}</b><span>Avg per day</span></div></div><div class="cw">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(w=>`<span>${w}</span>`).join("")}</div><div class="cg">${cells}</div></div>`})()}
+${(()=>{const [Y,Mo]=mon.split("-").map(Number),first=new Date(Y,Mo-1,1).getDay(),nd=new Date(Y,Mo,0).getDate();let cells="",days=0,rowsH="";const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],DAYS={};for(let i=0;i<first;i++)cells+='<div class="ce e"></div>';
+for(let d=1;d<=nd;d++){const k=mon+"-"+String(d).padStart(2,"0"),v=(S.meals[k]||{})[u]||0,all=S.mem.reduce((q,m)=>q+((S.meals[k]||{})[m]||0),0),items=S.bz.filter(x=>x.d===k),bt=items.reduce((q,x)=>q+x.a,0);DAYS[k]={me:v,all,bt,items};if(v>0)days++;
+cells+=`<div class="ce${v>0?" on":""}${k===today()?" td":""}" data-k="${k}"><small>${d}</small>${bt>0?"<u></u>":""}${v>0?`<b>${f(v)}</b>`:""}</div>`;
+if(all>0||bt>0)rowsH+=`<div class="dr"><span>${String(d).padStart(2,"0")} ${MN[Mo-1]}</span><span>${f(v)}</span><span>${f(all)}</span><span>${bt>0?m2(bt):"-"}</span></div>`}
+window.__days=DAYS;
+return `<div class="c cal"><div class="ch"><b>🍽️ Your Meals</b><span class="bd2 approved">${f(r.meals)} meals</span></div><div class="cs"><div><b>${f(r.meals)}</b><span>Total meals</span></div><div><b>${days}</b><span>Days with meals</span></div><div><b>${days?f(r.meals/days):0}</b><span>Avg per day</span></div></div><div class="cw">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(w=>`<span>${w}</span>`).join("")}</div><div class="cg">${cells}</div><div class="m lg"><u class="ld"></u> Bazar done that day · tap a day for details</div><div class="dd" id="dd"></div><div class="dtab"><b>📅 Daily summary</b><div class="dr dhd"><span>Date</span><span>You</span><span>All meals</span><span>Bazar</span></div>${rowsH||'<p class="m">No meals or bazar yet</p>'}<div class="dr tt"><span>Total</span><span>${f(r.meals)}</span><span>${f(R.tm)}</span><span>${m2(R.tb)}</span></div></div></div>`})()}
 <div class="c"><b>🛒 Report Bazar</b><input type="date" id="bd" value="${today()}"><input id="ba" type="number" inputmode="decimal" placeholder="Cost ৳"><input id="bn" placeholder="What was bought"><button id="bs">Send to admin</button><div id="so"></div><p class="m">The admin will verify and add it.</p></div>
 <div id="rq"></div>
 <div class="c"><b>🧾 This month's bazar</b>${bzList(bz,false)}</div>`;
 $("mo").onchange=e=>{if(e.target.value){mon=e.target.value;member(id,u)}};
 $("rf").onclick=()=>load(id,u).catch(e=>toast(e.message));
 $("mn").onclick=async()=>{try{const q=await Notification.requestPermission();toast(q=="granted"?"Notifications enabled":"Notifications off",q=="granted"?"#0f7b4f":null)}catch(e){toast("Not supported in this browser")}};
+(()=>{const D=window.__days||{},dd=$("dd");if(!dd)return;const show=k=>{const x=D[k];if(!x)return;const dt=new Date(k+"T00:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
+dd.innerHTML=`<div class="dhd2">${dt}</div><div class="dg"><div><span>Your meals</span><b>${f(x.me)}</b></div><div><span>All members' meals</span><b>${f(x.all)}</b></div><div><span>Bazar total</span><b>${m2(x.bt)}</b></div></div>`+(x.items.length?x.items.map(i=>`<div class="r"><span>${esc(i.n||"Bazar")}<br><span class="m">${esc(i.b||"Other")}</span></span><b>${m2(i.a)}</b></div>`).join(""):'<p class="m">No bazar on this day</p>')};
+A.querySelectorAll(".ce[data-k]").forEach(c=>c.onclick=()=>{A.querySelectorAll(".ce.sel").forEach(e=>e.classList.remove("sel"));c.classList.add("sel");show(c.dataset.k)});
+const tc=A.querySelector('.ce[data-k="'+today()+'"]');if(tc)tc.click();else dd.innerHTML='<p class="m">Tap a day to see its meals and bazar.</p>'})();
 reqs(id,u,true);
 $("bs").onclick=async()=>{const a=+$("ba").value;if(!(a>0))return alert("Enter the amount");try{const rec={u,d:$("bd").value||today(),a,n:$("bn").value.trim(),t:Date.now()},j=await db("POST","mess/"+id+"/pending",rec),kk="mhs:"+id+":"+u,L0=lget(kk)||[];L0.unshift({k:j.name,d:rec.d,a,n:rec.n,t:rec.t});lset(kk,L0.slice(0,30));$("ba").value="";$("bn").value="";reqs(id,u,false);$("bs").textContent="Sent ✓";if(S.ph)$("so").innerHTML=`<a class="b" target="_blank" rel="noopener" href="https://wa.me/${wa(S.ph)}?text=${encodeURIComponent("🛒 "+u+" ৳"+a+" reported a bazar expense. Check the app.")}">📲 Notify admin on WhatsApp</a>`}catch(e){toast(e.message)}}}
 boot();

@@ -108,6 +108,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .cal .ch{flex-wrap:wrap;gap:8px}.cal .ch>b{white-space:nowrap}
 @media(max-width:380px){.ce .cb{font-size:9px;padding:1px 3px}.cg,.cw{gap:4px}}
 @media(prefers-color-scheme:dark){.ce .cb,.bd2.blue{color:#8db3ff}}
+.ce[data-k]:active{transform:scale(.96)}
+.dpo{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:dpf .18s ease}
+.dps{background:var(--card);color:var(--tx);width:100%;max-width:560px;max-height:80vh;overflow:auto;border-radius:22px 22px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.25);animation:dpu .22s ease}
+.dph{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.dph b{font-size:17px;overflow-wrap:anywhere}.dph .x{margin:0;padding:6px 11px}
+.dpl{margin-top:10px}.dpl>b{display:block;margin-bottom:4px}
+@keyframes dpu{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}@keyframes dpf{from{opacity:0}to{opacity:1}}
+@media(min-width:720px){.dpo{align-items:center}.dps{border-radius:22px}}
 </style></head><body><div class="w" id="app"></div><div class="cp">© Md. Hafizur Rahman</div>
 <script>
 // ===== CONFIG: paste your Firebase values here =====
@@ -277,6 +284,12 @@ const c=s=>out.filter(q=>q.v&&q.v.s==s).length,pend=out.filter(q=>q.v&&!q.v.s).l
 el.innerHTML=`<div class="c"><div class="ch"><b>📨 My bazar requests</b>${show.some(q=>q.v&&q.v.s)?'<button class="x d" id="cld">Clear done</button>':""}</div><div class="rqs"><span class="bd2 approved">${c("approved")} approved</span><span class="bd2 rejected">${c("rejected")} rejected</span><span class="bd2 pending">${pend} pending</span></div>`+show.map(q=>{const st=q.bad?"offline":!q.v?"closed":q.v.s||"pending",lb={pending:"Pending",approved:"Approved",rejected:"Rejected",closed:"Closed",offline:"Offline"}[st];return `<div class="rqr"><div><b>${m2(q.a)}</b> <span class="m">${esc(q.n||"")}</span><div class="m">${esc(String(q.d).slice(5))}${st=="rejected"&&q.v.why?" · Reason: "+esc(q.v.why):""}</div></div><span class="rqa"><span class="bd2 ${st}">${lb}${fresh.includes(q)?" · NEW":""}</span>${q.v&&q.v.s?`<button class="x d" data-dm="${q.k}">✕</button>`:""}</span></div>`}).join("")+`</div>`;
 el.querySelectorAll("[data-dm]").forEach(b=>b.onclick=()=>{lset(kk,(lget(kk)||[]).filter(q=>q.k!=b.dataset.dm));reqs(id,u,false)});
 const cl=$("cld");if(cl)cl.onclick=()=>{const dn=show.filter(q=>q.v&&q.v.s).map(q=>q.k);lset(kk,(lget(kk)||[]).filter(q=>!dn.includes(q.k)));reqs(id,u,false)}}
+function dayPop(k){const x=(window.__days||{})[k];if(!x)return;const old=$("dp");if(old)old.remove();
+const dt=new Date(k+"T00:00:00").toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const o=document.createElement("div");o.id="dp";o.className="dpo";
+o.innerHTML=`<div class="dps" role="dialog" aria-modal="true"><div class="dph"><b>${dt}</b><button class="x d" id="dpx" aria-label="Close">✕</button></div><div class="dg"><div><span>Your meals</span><b>${f(x.me)}</b></div><div><span>Your bazar</span><b>${m2(x.bt)}</b></div></div><div class="dpl"><b>🛒 Bazar details</b>${x.items.length?x.items.map(i=>`<div class="r"><span>${esc(i.n||"Bazar")}</span><b>${m2(i.a)}</b></div>`).join("")+`<div class="bt2"><span>Total</span><b>${m2(x.bt)}</b></div>`:'<p class="m">You did no bazar on this day.</p>'}</div></div>`;
+const kd=e=>{if(e.key=="Escape")close()},close=()=>{o.remove();document.removeEventListener("keydown",kd)};
+o.onclick=e=>{if(e.target===o)close()};document.addEventListener("keydown",kd);document.body.appendChild(o);$("dpx").onclick=close;$("dpx").focus()}
 async function load(id,u){const d=await db("GET","mess/"+id+"/data");if(!d)return A.innerHTML="<p class='n'>Mess not found</p>";S=norm(d);member(id,u)}
 function member(id,u){window.mid=id;window.mu=u;if(!window.mp)window.mp=setInterval(()=>reqs(window.mid,window.mu,true),30000);const R=calc(),r=R.rows.find(x=>x.m==u);if(!r)return A.innerHTML=`<div class="c"><b class="n">${esc(u)} is not a member of this mess</b></div>`;
 const ml=Object.keys(S.meals).filter(d=>d.startsWith(mon)&&S.meals[d][u]>0).sort(),bz=S.bz.filter(x=>x.d.startsWith(mon)).sort((a,b)=>b.d.localeCompare(a.d)),neg=r.bal<0;
@@ -290,18 +303,20 @@ ${[["🍽️","Meal cost",f(r.meals)+" meals × "+m2(R.rate),r.mc,"#0f7b4f"],["�
 <div class="it"><span>Total cost</span><b>${m2(r.cost)}</b></div>
 <div class="il cr"><i style="background:#0f7b4f">🛒</i><div><b>Bazar you paid</b><small>Credited to you</small></div><em>− ${m2(r.bz)}</em></div>
 <div class="ib ${neg?"neg":"pos"}"><span>${neg?"You need to pay":"You will receive"}</span><b>${m2(Math.abs(r.bal))}</b></div></div>
-${(()=>{const [Y,Mo]=mon.split("-").map(Number),first=new Date(Y,Mo-1,1).getDay(),nd=new Date(Y,Mo,0).getDate();let cells="",days=0;
+${(()=>{const [Y,Mo]=mon.split("-").map(Number),first=new Date(Y,Mo-1,1).getDay(),nd=new Date(Y,Mo,0).getDate();let cells="",days=0;const DAYS={};
 const sh=a=>a>=10000?(a/1000).toFixed(1).replace(".0","")+"k":String(Math.round(a));
 for(let i=0;i<first;i++)cells+='<div class="ce e"></div>';
-for(let d=1;d<=nd;d++){const k=mon+"-"+String(d).padStart(2,"0"),v=(S.meals[k]||{})[u]||0,bt=S.bz.filter(x=>x.d===k&&x.b===u).reduce((q,x)=>q+x.a,0);if(v>0)days++;
-cells+=`<div class="ce${v>0?" on":""}${bt>0?" bz":""}${k===today()?" td":""}"><small>${d}</small><b class="cm">${v>0?f(v):""}</b><i class="cb">${bt>0?sh(bt):""}</i></div>`}
-return `<div class="c cal"><div class="ch"><b>🍽️ Your Meals &amp; Bazar</b><span class="rqa"><span class="bd2 approved">${f(r.meals)} meals</span><span class="bd2 blue">${m2(r.bz)} bazar</span></span></div><div class="cs"><div><b>${f(r.meals)}</b><span>Total meals</span></div><div><b>${days}</b><span>Days with meals</span></div><div><b>${days?f(r.meals/days):0}</b><span>Avg per day</span></div></div><div class="cw">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(w=>`<span>${w}</span>`).join("")}</div><div class="cg">${cells}</div><div class="m lg"><span class="lgd g"></span>Meals <span class="lgd b"></span>Your bazar (৳)</div></div>`})()}
+for(let d=1;d<=nd;d++){const k=mon+"-"+String(d).padStart(2,"0"),v=(S.meals[k]||{})[u]||0,items=S.bz.filter(x=>x.d===k&&x.b===u),bt=items.reduce((q,x)=>q+x.a,0);DAYS[k]={me:v,bt,items};if(v>0)days++;
+cells+=`<div class="ce${v>0?" on":""}${bt>0?" bz":""}${k===today()?" td":""}" data-k="${k}" role="button" tabindex="0"><small>${d}</small><b class="cm">${v>0?f(v):""}</b><i class="cb">${bt>0?sh(bt):""}</i></div>`}
+window.__days=DAYS;
+return `<div class="c cal"><div class="ch"><b>🍽️ Your Meals &amp; Bazar</b><span class="rqa"><span class="bd2 approved">${f(r.meals)} meals</span><span class="bd2 blue">${m2(r.bz)} bazar</span></span></div><div class="cs"><div><b>${f(r.meals)}</b><span>Total meals</span></div><div><b>${days}</b><span>Days with meals</span></div><div><b>${days?f(r.meals/days):0}</b><span>Avg per day</span></div></div><div class="cw">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(w=>`<span>${w}</span>`).join("")}</div><div class="cg">${cells}</div><div class="m lg"><span class="lgd g"></span>Meals <span class="lgd b"></span>Your bazar (৳) · tap a date for details</div></div>`})()}
 <div class="c"><b>🛒 Report Bazar</b><input type="date" id="bd" value="${today()}"><input id="ba" type="number" inputmode="decimal" placeholder="Cost ৳"><input id="bn" placeholder="What was bought"><button id="bs">Send to admin</button><div id="so"></div><p class="m">The admin will verify and add it.</p></div>
 <div id="rq"></div>
 <div class="c"><b>🧾 This month's bazar</b>${bzList(bz,false)}</div>`;
 $("mo").onchange=e=>{if(e.target.value){mon=e.target.value;member(id,u)}};
 $("rf").onclick=()=>load(id,u).catch(e=>toast(e.message));
 $("mn").onclick=async()=>{try{const q=await Notification.requestPermission();toast(q=="granted"?"Notifications enabled":"Notifications off",q=="granted"?"#0f7b4f":null)}catch(e){toast("Not supported in this browser")}};
+A.querySelectorAll(".ce[data-k]").forEach(c=>{c.onclick=()=>dayPop(c.dataset.k);c.onkeydown=e=>{if(e.key=="Enter"||e.key==" "){e.preventDefault();dayPop(c.dataset.k)}}});
 reqs(id,u,true);
 $("bs").onclick=async()=>{const a=+$("ba").value;if(!(a>0))return alert("Enter the amount");try{const rec={u,d:$("bd").value||today(),a,n:$("bn").value.trim(),t:Date.now()},j=await db("POST","mess/"+id+"/pending",rec),kk="mhs:"+id+":"+u,L0=lget(kk)||[];L0.unshift({k:j.name,d:rec.d,a,n:rec.n,t:rec.t});lset(kk,L0.slice(0,30));$("ba").value="";$("bn").value="";reqs(id,u,false);$("bs").textContent="Sent ✓";if(S.ph)$("so").innerHTML=`<a class="b" target="_blank" rel="noopener" href="https://wa.me/${wa(S.ph)}?text=${encodeURIComponent("🛒 "+u+" ৳"+a+" reported a bazar expense. Check the app.")}">📲 Notify admin on WhatsApp</a>`}catch(e){toast(e.message)}}}
 boot();
